@@ -1,0 +1,15 @@
+artifact_uri: file:///c:/Users/vasja/OneDrive/%D0%A0%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B9%20%D1%81%D1%82%D0%BE%D0%BB/MorseAudioDecoder/mlruns/211151317549790211/b2361fafef324f3e8a9bf0d876709a81/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '211151317549790211'
+lifecycle_stage: active
+run_id: b2361fafef324f3e8a9bf0d876709a81
+run_name: train__Deltastandard
+run_uuid: b2361fafef324f3e8a9bf0d876709a81
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744124016783
+status: 1
+tags: []
+user_id: vasja
