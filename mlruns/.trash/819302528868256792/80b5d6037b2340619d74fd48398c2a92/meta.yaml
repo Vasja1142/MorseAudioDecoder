@@ -1,0 +1,16 @@
+artifact_uri: file:///c:/Users/vasja/OneDrive/%D0%A0%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B9%20%D1%81%D1%82%D0%BE%D0%BB/Morse_dev/MorseAudioDecoder/mlruns/819302528868256792/80b5d6037b2340619d74fd48398c2a92/artifacts
+deleted_time: 1744130803326
+end_time: 1744126721210
+entry_point_name: ''
+experiment_id: '819302528868256792'
+lifecycle_stage: deleted
+run_id: 80b5d6037b2340619d74fd48398c2a92
+run_name: calib__Deltastandard_trim200
+run_uuid: 80b5d6037b2340619d74fd48398c2a92
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744126694622
+status: 3
+tags: []
+user_id: vasja
