@@ -1,0 +1,16 @@
+{
+  "sample_rate": 44100,
+  "frame_length_rms": 384,
+  "hop_length_rms": 96,
+  "apply_filter": false,
+  "filter_order": 5,
+  "filter_fmin": 0,
+  "filter_fmax": 22049,
+  "normalization_mode": "zscore",
+  "delta_type": "standard",
+  "delta_alpha": 1.0,
+  "rms_smoothing_window_size": 1,
+  "delta_ma_smoothing_window_size": 1,
+  "fixed_crop_start_sec": 0,
+  "fixed_crop_end_sec": 0
+}

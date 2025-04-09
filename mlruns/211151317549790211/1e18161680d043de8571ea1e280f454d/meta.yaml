@@ -1,0 +1,15 @@
+artifact_uri: file:///c:/Users/vasja/OneDrive/%D0%A0%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B9%20%D1%81%D1%82%D0%BE%D0%BB/MorseAudioDecoder/mlruns/211151317549790211/1e18161680d043de8571ea1e280f454d/artifacts
+end_time: 1744143780828
+entry_point_name: ''
+experiment_id: '211151317549790211'
+lifecycle_stage: active
+run_id: 1e18161680d043de8571ea1e280f454d
+run_name: train__SR44k_Deltastandard_NormZscore_FiltOFF_cropNONE
+run_uuid: 1e18161680d043de8571ea1e280f454d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744143564061
+status: 3
+tags: []
+user_id: vasja
