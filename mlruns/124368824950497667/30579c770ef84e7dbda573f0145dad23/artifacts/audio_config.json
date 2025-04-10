@@ -1,0 +1,8 @@
+{
+  "sample_rate": 8000,
+  "frame_length_rms": 128,
+  "hop_length_rms": 64,
+  "apply_filter": false,
+  "apply_trimming": false,
+  "trim_top_db": 30
+}
