@@ -6,6 +6,7 @@ Thumbs.db
 # Игнорировать файлы рабочего стола Windows
 desktop.ini
 
+mlruns/
 # --- Python ---
 # Скомпилированные файлы Python (байт-код и оптимизированный)
 *.py[cod]
