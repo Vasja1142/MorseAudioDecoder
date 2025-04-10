@@ -1,2 +1,2 @@
-config_name,trimming_status,best_val_lev,best_epoch,final_train_loss,final_val_loss,status,train_time_min,infer_time_sec,error,run_suffix
-BestModel_3x512_ClsDouble,OFF,inf,,inf,inf,failed_critical,0.0,0.0,Invalid parent directory 'C:\Users\vasja\OneDrive\Рабочий стол\MorseAudioDecoder\mlruns\.trash',_BestModel_3x512_ClsDouble
+config_name,trimming_status,best_val_lev,best_epoch,final_train_loss,final_val_loss,status,train_time_min,infer_time_sec,error,run_suffix,mlflow_run_id
+BestModel_3x512_ClsDouble,OFF,0.679,14,0.14626312074878822,0.3093626962304115,completed,189.7841176509857,96.36366605758667,,_BestModel_3x512_ClsDouble,ca52891c2cff4373b04ab07ef0d773ff

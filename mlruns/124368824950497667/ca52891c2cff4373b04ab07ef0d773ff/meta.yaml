@@ -1,5 +1,5 @@
 artifact_uri: file:///c:/Users/vasja/OneDrive/%D0%A0%D0%B0%D0%B1%D0%BE%D1%87%D0%B8%D0%B9%20%D1%81%D1%82%D0%BE%D0%BB/MorseAudioDecoder/mlruns/124368824950497667/ca52891c2cff4373b04ab07ef0d773ff/artifacts
-end_time: null
+end_time: 1744276087491
 entry_point_name: ''
 experiment_id: '124368824950497667'
 lifecycle_stage: active
@@ -10,6 +10,6 @@ source_name: ''
 source_type: 4
 source_version: ''
 start_time: 1744264700325
-status: 1
+status: 3
 tags: []
 user_id: vasja
