@@ -1,0 +1,2 @@
+config_name,trimming_status,delta2_status,best_val_lev,best_epoch,final_train_loss,final_val_loss,status,train_time_min,infer_time_sec,error,run_suffix
+BestModel_3x512_SingleCls_Delta2,OFF,OFF,inf,,inf,inf,failed_critical,0.0,0.0,Несоответствие! model_input_feature_dim (3) не совпадает с ожидаемым (2) для use_delta2=False,_BestModel_3x512_SingleCls_Delta2
