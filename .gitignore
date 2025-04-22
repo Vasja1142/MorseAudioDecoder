@@ -5,8 +5,16 @@
 Thumbs.db
 # Игнорировать файлы рабочего стола Windows
 desktop.ini
-
+generic_perlin_maps/
 mlruns/
+morse_dataset/
+output_v9.1_ResNetSE_AsymKerns/
+output_v9.1_ResNetSE_AsymKerns_GenericPerlin/
+output_v9.2_ResNetSE_K3x5-3x9_Hop64/
+output_v9.3_ResNetCBAM_K3x5-3x9_Hop64/
+output_v9.4_ResNetSE_K3x5-K3x5_Hop64_NoSpecAug_FINETUNE/
+output_v10.0_Refactored/
+output_v10.1_Refactored/
 # --- Python ---
 # Скомпилированные файлы Python (байт-код и оптимизированный)
 *.py[cod]
@@ -15,6 +23,7 @@ mlruns/
 # Директория кэша Python
 __pycache__/
 .pytest_cache/
+
 
 # Файлы дистрибуции / установки
 build/
