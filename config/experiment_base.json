@@ -3,8 +3,8 @@
     "run_mode": "finetune_only",
     "random_seed": 42,
     "paths": {
-        "data_dir": "data/",
-        "audio_folder_name": "morse_dataset/morse_dataset",
+        "data_dir": "data/",      
+        "audio_folder_name": "data/raw/morse_dataset/morse_dataset",
         "output_dir": "./outputs/",
         "generic_perlin_maps_dir": "data/external/perlin_maps/",
         "mlflow_tracking_uri": null,
@@ -81,9 +81,9 @@
     "finetuning": {
         "finetune_only_checkpoint_path": "./outputs/CRNN_ResNetSE_K3x5-K3x5_Hop96_v10_Final_train_only/MorseCRNN_Final_TRAIN_epoch8_lev0.4070.pth",
         "apply_audio_augmentation": true,
-        "epochs": 15,
+        "epochs": 20,
         "batch_size": 16,
-        "learning_rate": 0.0001,
+        "learning_rate": 0.0003,
         "scheduler": "OneCycleLR",
         "early_stopping_patience": 10,
         "weight_decay": 0.0001,
@@ -96,7 +96,7 @@
             "pct_start": 0.1,
             "anneal_strategy": "cos",
             "div_factor": 5.0,
-            "final_div_factor": 1000.0,
+            "final_div_factor": 100.0,
             "verbose": false
         }
     },

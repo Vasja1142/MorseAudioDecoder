@@ -24,18 +24,20 @@ class MorseDataset(Dataset):
     """
     Класс Dataset для азбуки Морзе (v10.5 - с мастер-флагом аугментаций).
     """
+    # Убедись, что начало __init__ выглядит ИМЕННО ТАК:
     def __init__(
         self,
         df: pd.DataFrame,
         char_to_int: Dict[str, int],
         config: Dict[str, Any],
         is_train: bool,
-        audio_augmenter: Optional[audiomentations.Compose],
-        spec_augment_transform: Optional[SpecAugmentTransform],
+        audio_augmenter: Optional[audiomentations.Compose], # 
+        spec_augment_transform: Optional[SpecAugmentTransform], 
         available_map_indices: Optional[List[int]] = None,
         project_root: Optional[Path] = None,
-        apply_all_augmentations_flag: bool = False # По умолчанию выключено
+        apply_all_augmentations_flag: bool = False
     ):
+
         if df is None or df.empty: raise ValueError("DataFrame не может быть пустым.")
         if char_to_int is None: raise ValueError("Словарь char_to_int не может быть None.")
 
@@ -52,35 +54,44 @@ class MorseDataset(Dataset):
         self.blank_idx = config.get("ctc", {}).get("blank_idx", 0)
         self.pad_idx = config.get("ctc", {}).get("pad_idx", 0)
 
+
         # --- Пути ---
         paths_cfg = config.get("paths", {})
-        self.audio_folder_path = self.project_root / paths_cfg.get("data_dir", "data") / 'raw' / paths_cfg.get("audio_folder_name", "morse_dataset/morse_dataset")
+        audio_folder_rel_path_str = paths_cfg.get("audio_folder_name")
+        if not audio_folder_rel_path_str:
+            raise ValueError("Ключ 'paths.audio_folder_name' отсутствует или пуст в конфиге модели.")
+        self.audio_folder_path = (self.project_root / audio_folder_rel_path_str).resolve()
         perlin_dir_rel = paths_cfg.get("generic_perlin_maps_dir")
-        self.generic_maps_dir = (self.project_root / perlin_dir_rel) if perlin_dir_rel else None
+        self.generic_maps_dir = (self.project_root / perlin_dir_rel).resolve() if perlin_dir_rel else None
+        # --------------------------------------------------------------------------
+
 
         # --- Настройка аугментаций (с учетом мастер-флага) ---
-        # Аудио-аугментатор передается уже готовым (или None)
         self.audio_augmenter = audio_augmenter if is_train and apply_all_augmentations_flag else None
         self.audio_aug_prob = config.get("audio_augmentation", {}).get("p", 1.0) if self.audio_augmenter else 0.0
-
-        # SpecAugment передается уже готовым (или None)
         self.spec_augment_transform = spec_augment_transform if is_train and apply_all_augmentations_flag else None
-
-        # Perlin Noise: включаем только если is_train, мастер-флаг True, карты есть, И флаг в конфиге True
         self.apply_perlin = (
             is_train and
-            apply_all_augmentations_flag and # <<< УЧЕТ МАСТЕР-ФЛАГА
+            apply_all_augmentations_flag and
             available_map_indices and
-            self.generic_maps_dir and
+            self.generic_maps_dir and # <-- Теперь это должно работать
             config.get("perlin_augmentation", {}).get("apply", False)
         )
         self.available_map_indices = available_map_indices if self.apply_perlin else []
         self.perlin_apply_prob = config.get("perlin_augmentation", {}).get("p", 0.0) if self.apply_perlin else 0.0
 
+        # Additive Gaussian
+        self.apply_additive_gaussian = (
+            is_train and
+            apply_all_augmentations_flag and
+            config.get("additive_gaussian_augmentation", {}).get("apply", False)
+        )
+        self.add_gauss_apply_prob = config.get("additive_gaussian_augmentation", {}).get("p", 0.0) if self.apply_additive_gaussian else 0.0
+
         # Additive Gaussian: включаем только если is_train, мастер-флаг True, И флаг в конфиге True
         self.apply_additive_gaussian = (
             is_train and
-            apply_all_augmentations_flag and # <<< УЧЕТ МАСТЕР-ФЛАГА
+            apply_all_augmentations_flag and 
             config.get("additive_gaussian_augmentation", {}).get("apply", False)
         )
         self.add_gauss_apply_prob = config.get("additive_gaussian_augmentation", {}).get("p", 0.0) if self.apply_additive_gaussian else 0.0

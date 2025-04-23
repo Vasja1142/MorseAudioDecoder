@@ -51,8 +51,8 @@ def create_char_map(texts: List[str], ctc_config: dict) -> Tuple[Dict[str, int],
          raise ValueError("Ошибка: Несоответствие размеров словарей char_to_int и int_to_char")
     if blank_idx not in int_to_char or int_to_char[blank_idx] != blank_char:
          raise ValueError(f"Ошибка: Проблема с символом blank (idx={blank_idx})")
-    if pad_idx in int_to_char:
-        raise ValueError(f"Ошибка: Индекс pad ({pad_idx}) конфликтует с символом '{int_to_char[pad_idx]}'")
+    if pad_idx in int_to_char and pad_idx != blank_idx:
+        raise ValueError(f"Ошибка: Индекс pad ({pad_idx}) конфликтует с символом '{int_to_char[pad_idx]}' (который не является бланком)")
 
     print(f"Размер словаря (Vocab Size, включая бланк): {vocab_size}")
     print(f"Словарь (idx: char): { {k: int_to_char[k] for k in sorted(int_to_char.keys())} }")
