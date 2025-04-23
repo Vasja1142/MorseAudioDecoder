@@ -179,7 +179,7 @@
     "execution_info": {
         "python_version": "3.9.21 (main, Dec 11 2024, 16:35:24) [MSC v.1929 64 bit (AMD64)]",
         "torch_version": "2.5.1+cu121",
-        "start_time_utc": "2025-04-22 19:10:29 UTC",
+        "start_time_utc": "2025-04-23 05:35:39 UTC",
         "project_root": "C:\\Users\\vasja\\OneDrive\\Рабочий стол\\MorseAudioDecoder",
         "output_dir_run": "C:\\Users\\vasja\\OneDrive\\Рабочий стол\\MorseAudioDecoder\\outputs\\CRNN_ResNetSE_K3x5-K3x5_Hop96_v10_Base"
     }
