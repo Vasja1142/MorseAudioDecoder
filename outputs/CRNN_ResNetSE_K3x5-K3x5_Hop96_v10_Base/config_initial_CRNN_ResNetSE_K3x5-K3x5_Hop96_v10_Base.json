@@ -1,0 +1,186 @@
+{
+    "run_description": "CRNN_ResNetSE_K3x5-K3x5_Hop96_v10_Base",
+    "run_mode": "train_and_finetune",
+    "mode": {
+        "calibration_mode": false,
+        "calibration_subset_size": 500,
+        "calibration_epochs": 5
+    },
+    "random_seed": 42,
+    "paths": {
+        "data_dir": "data/",
+        "audio_folder_name": "morse_dataset/morse_dataset",
+        "output_dir": "./outputs/",
+        "generic_perlin_maps_dir": "data/external/perlin_maps/",
+        "mlflow_tracking_uri": null,
+        "background_noise_dir": "data/external/_background_noise_/"
+    },
+    "mlflow": {
+        "experiment_name": "MorseCodeRecognition_v10",
+        "run_name_prefix": "MorseCRNN"
+    },
+    "audio": {
+        "sample_rate": 8000,
+        "n_fft": 512,
+        "hop_length": 96
+    },
+    "audio_augmentation": {
+        "apply": false,
+        "p": 1.0,
+        "pipeline": [
+            {
+                "name": "AddGaussianNoise",
+                "params": {
+                    "min_amplitude": 0.003,
+                    "max_amplitude": 0.015,
+                    "p": 0.8
+                }
+            },
+            {
+                "name": "Gain",
+                "params": {
+                    "min_gain_db": -10.0,
+                    "max_gain_db": 10.0,
+                    "p": 0.8
+                }
+            },
+            {
+                "name": "ClippingDistortion",
+                "params": {
+                    "min_percentile_threshold": 0,
+                    "max_percentile_threshold": 40,
+                    "p": 0.7
+                }
+            }
+        ]
+    },
+    "perlin_augmentation": {
+        "apply": false,
+        "p": 0.95,
+        "amplitude_min": 0.2,
+        "amplitude_max": 0.9,
+        "chaos_amplitude_min": 0.0,
+        "chaos_amplitude_max": 0.1,
+        "chaos_type": "uniform",
+        "offset_factor_min": 0.05,
+        "offset_factor_max": 0.2
+    },
+    "additive_gaussian_augmentation": {
+        "apply": false,
+        "p": 0.9,
+        "std_dev_min": 0.05,
+        "std_dev_max": 0.15
+    },
+    "spec_augmentation": {
+        "apply": false,
+        "time_mask_param": 6,
+        "num_time_masks": 25,
+        "freq_mask_param": 5,
+        "num_freq_masks": 10,
+        "iid_masks": true
+    },
+    "model": {
+        "cnn_type": "ResBlockSE",
+        "cnn_block_channels": [
+            32,
+            64
+        ],
+        "cnn_kernel_size": [
+            [
+                5,
+                5
+            ],
+            [
+                5,
+                5
+            ]
+        ],
+        "cnn_stride": [
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                2
+            ]
+        ],
+        "cnn_use_se": true,
+        "cnn_se_reduction_ratio": 16,
+        "cnn_use_cbam": false,
+        "rnn_hidden_size": 128,
+        "rnn_layers": 2,
+        "rnn_dropout": 0.2,
+        "dropout": 0.2,
+        "freq_dim": 257,
+        "vocab_size": 45
+    },
+    "training": {
+        "apply_audio_augmentation": false,
+        "epochs": 20,
+        "batch_size": 16,
+        "optimizer": "AdamW",
+        "learning_rate": 0.0003,
+        "weight_decay": 0.0001,
+        "scheduler": "ReduceLROnPlateau",
+        "use_amp": true,
+        "gradient_accumulation_steps": 2,
+        "gradient_clip_val": 1.0,
+        "val_split_ratio": 0.1,
+        "early_stopping_patience": 13
+    },
+    "finetuning": {
+        "apply": true,
+        "apply_audio_augmentation": false,
+        "epochs": 12,
+        "batch_size": 16,
+        "learning_rate": 0.00025,
+        "scheduler": "OneCycleLR",
+        "early_stopping_patience": 13,
+        "weight_decay": 0.0001,
+        "use_amp": true,
+        "gradient_accumulation_steps": 2,
+        "gradient_clip_val": 1.0
+    },
+    "schedulers": {
+        "ReduceLROnPlateau": {
+            "mode": "min",
+            "factor": 0.5,
+            "patience": 4,
+            "factor_train": 0.5,
+            "patience_train": 4,
+            "factor_finetune": 0.5,
+            "patience_finetune": 4,
+            "min_lr": 1e-07,
+            "verbose": true
+        },
+        "OneCycleLR": {
+            "pct_start": 0.1,
+            "anneal_strategy": "cos",
+            "div_factor": 5.0,
+            "final_div_factor": 1000.0,
+            "verbose": false
+        }
+    },
+    "ctc": {
+        "blank_char": "<blank>",
+        "blank_idx": 0,
+        "pad_char": "<pad>",
+        "pad_idx": -1
+    },
+    "device": "cuda",
+    "num_workers": 0,
+    "train_file_column": "id",
+    "test_file_column": "id",
+    "morse_code_column": "message",
+    "info": {
+        "num_available_perlin_maps": 1453
+    },
+    "execution_info": {
+        "python_version": "3.9.21 (main, Dec 11 2024, 16:35:24) [MSC v.1929 64 bit (AMD64)]",
+        "torch_version": "2.5.1+cu121",
+        "start_time_utc": "2025-04-22 19:10:29 UTC",
+        "project_root": "C:\\Users\\vasja\\OneDrive\\Рабочий стол\\MorseAudioDecoder",
+        "output_dir_run": "C:\\Users\\vasja\\OneDrive\\Рабочий стол\\MorseAudioDecoder\\outputs\\CRNN_ResNetSE_K3x5-K3x5_Hop96_v10_Base"
+    }
+}

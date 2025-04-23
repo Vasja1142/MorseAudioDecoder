@@ -5,6 +5,7 @@
 Thumbs.db
 # Игнорировать файлы рабочего стола Windows
 desktop.ini
+data/
 generic_perlin_maps/
 mlruns/
 morse_dataset/
