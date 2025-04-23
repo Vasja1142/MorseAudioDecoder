@@ -175,7 +175,7 @@
 
 1.  **Клонируйте репозиторий:**
     ```bash
-    git clone [URL вашего репозитория]
+    git clone https://github.com/Vasja1142/MorseAudioDecoder.git
     cd MorseAudioDecoder
     ```
 
