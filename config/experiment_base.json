@@ -1,6 +1,6 @@
 {
     "run_description": "CRNN_ResNetSE_K3x5-K3x5_Hop96_v10_Final",
-    "run_mode": "finetune_only",
+    "run_mode": "train_only",
     "random_seed": 42,
     "paths": {
         "data_dir": "data/",      

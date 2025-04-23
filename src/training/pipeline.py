@@ -57,6 +57,7 @@ def run_training(
     Запускает цикл обучения ('train') или дообучения ('finetune') модели.
     Возвращает путь к лучшей модели этапа и её Levenshtein score.
     """
+    
     # --- 1. Инициализация и Проверки ---
     best_model_path_stage: str = ""
     best_val_levenshtein: float = float('inf')
@@ -84,6 +85,7 @@ def run_training(
 
     # --- Основной блок try...except...finally ---
     try:
+        
         # --- 2. Извлечение Параметров Конфигурации ---
         print(f"\n--- Чтение параметров для этапа '{mode.upper()}' ---")
         if mode == 'train':
@@ -122,10 +124,7 @@ def run_training(
         apply_add_gauss = config.get("additive_gaussian_augmentation", {}).get("apply", False)
         apply_spec_aug = config.get("spec_augmentation", {}).get("apply", False)
 
-        print(f"  Device: {device}, Epochs: {current_epochs}, BS: {current_batch_size}, LR: {current_lr:.1e}")
-        print(f"  Optimizer: {optimizer_name}, Scheduler: {scheduler_name}, AMP: {current_use_amp}")
-        print(f"  Augment (Stage): Audio={apply_audio_augment_stage}")
-        print(f"  Augment (Online): Perlin={apply_perlin}, AddGauss={apply_add_gauss}, SpecAug={apply_spec_aug}")
+        print(f"  Этап '{mode.upper()}': Эпох={current_epochs}, BS={current_batch_size}, LR={current_lr:.1e}, Оптимизатор={optimizer_name}, Планировщик={scheduler_name or 'None'}, AMP={current_use_amp}")
 
         # --- 3. Логирование в MLflow (если активно) ---
         if IS_MLFLOW_ACTIVE and mlflow.active_run():
@@ -143,10 +142,7 @@ def run_training(
         # --- 4. Инициализация Модели ---
         print("\nИнициализация модели...")
         model = MorseRecognizer(config).to(device)
-        print(f"  Модель '{type(model).__name__}' создана.")
-        # Опционально: вывод числа параметров
-        # total_params = sum(p.numel() for p in model.parameters())
-        # print(f"  Параметров: {total_params:,}")
+        print(f"Модель '{type(model).__name__}' создана на устройстве {device}.")
 
         # --- 5. Загрузка Чекпоинта (для finetune) ---
         if is_finetune_stage and absolute_checkpoint_path:
@@ -158,37 +154,29 @@ def run_training(
             else: raise KeyError("Не удалось найти state_dict модели в чекпоинте.")
             model.load_state_dict(state_dict_to_load)
             print("  Веса модели успешно загружены.")
-            # Информация из чекпоинта (не влияет на старт)
-            loaded_epoch = checkpoint.get('epoch', 'N/A')
-            loaded_lev = checkpoint.get('val_levenshtein', float('inf'))
-            print(f"  (Инфо: чекпоинт эпохи {loaded_epoch}, lev={loaded_lev:.4f})")
 
         # --- 6. Инициализация Criterion, Optimizer, Scaler ---
-        print("\nИнициализация Criterion, Optimizer, Scaler...")
         criterion = nn.CTCLoss(blank=ctc_blank_idx, reduction='mean', zero_infinity=True)
         if optimizer_name.lower() == "adamw": optimizer = optim.AdamW(model.parameters(), lr=current_lr, weight_decay=current_weight_decay)
         elif optimizer_name.lower() == "adam": optimizer = optim.Adam(model.parameters(), lr=current_lr, weight_decay=current_weight_decay)
         else: print(f"Предупреждение: Неизвестный оптимизатор '{optimizer_name}'. Используется AdamW."); optimizer = optim.AdamW(model.parameters(), lr=current_lr, weight_decay=current_weight_decay)
         scaler = GradScaler(enabled=(device.type == 'cuda' and current_use_amp))
-        print(f"  Criterion, Optimizer ({type(optimizer).__name__}), Scaler ({'ON' if scaler.is_enabled() else 'OFF'}) инициализированы.")
+        print(f"Criterion, Optimizer ({type(optimizer).__name__}), Scaler ({'ON' if scaler.is_enabled() else 'OFF'}) инициализированы.")
         if is_finetune_stage: print("  (Состояние оптимизатора НЕ загружается для finetune)")
 
         # --- 6.1 Инициализация SpecAugment ---
         spec_augmenter = None
         if apply_spec_aug:
-            print("\nИнициализация SpecAugment...")
             spec_cfg = config.get("spec_augmentation", {})
             if spec_cfg.get("time_mask_param", 0) > 0 or spec_cfg.get("freq_mask_param", 0) > 0:
-                try: spec_augmenter = SpecAugmentTransform(spec_cfg); print("  SpecAugmentTransform создан.")
-                except Exception as e_spec: print(f"❌ ОШИБКА создания SpecAugment: {e_spec}"); apply_spec_aug = False
-            else: print("  Параметры SpecAugment не заданы."); apply_spec_aug = False
-        else: print("\nSpecAugment НЕ будет применяться.")
+                try:
+                    spec_augmenter = SpecAugmentTransform(spec_cfg)
+                    print("SpecAugmentTransform создан.") # <-- Краткое подтверждение
+                except Exception as e_spec: print(f"❌ ОШИБКА создания SpecAugment: {e_spec}")
 
         # --- 7. Создание Датасетов и Даталоадеров ---
-        print(f"\nПодготовка данных (Dataset/DataLoader) для '{mode}'...")
-        apply_all_augmentations_stage = run_config.get("apply_audio_augmentation", False)
-        print(f"  Мастер-флаг аугментаций для этапа '{mode}': {apply_all_augmentations_stage}")
 
+        apply_all_augmentations_stage = run_config.get("apply_audio_augmentation", False)
         # Создаем датасеты
         train_ds = MorseDataset(
             df=train_df, char_to_int=char_to_int, config=config, is_train=True,
@@ -207,7 +195,6 @@ def run_training(
         # Проверка созданных датасетов
         if not train_ds or not val_ds or len(train_ds) == 0 or len(val_ds) == 0:
             raise ValueError("Ошибка создания или пустой Dataset (train или val).")
-        print(f"  Размеры Dataset: Train={len(train_ds)}, Val={len(val_ds)}")
 
         # Создаем DataLoader'ы
         collate_wrapper = lambda batch: collate_fn(batch, ctc_pad_idx)
@@ -238,7 +225,6 @@ def run_training(
              raise ValueError("Ошибка: val_loader пуст (не содержит батчей).")
 
         # --- 8. Инициализация Планировщика (Scheduler) ---
-        print("\nИнициализация Scheduler...")
         scheduler = None
         scheduler_name_norm = str(scheduler_name).strip().lower() if scheduler_name else "none"
 
@@ -248,9 +234,8 @@ def run_training(
              total_steps = steps_per_epoch * current_epochs
              if total_steps <= 0: raise ValueError(f"Некорректный total_steps ({total_steps}) для OneCycleLR.")
              scheduler = OneCycleLR(optimizer, max_lr=current_lr, total_steps=total_steps, **scheduler_params)
-             print(f"  Scheduler: OneCycleLR (max_lr={current_lr:.1e}, total_steps={total_steps})")
+             print(f"Scheduler: OneCycleLR (total_steps={total_steps}) инициализирован.")
         elif scheduler_name_norm in ["nosched", "none", ""]: print("  Scheduler: Не используется.")
-        else: print(f"Предупреждение: Указанный scheduler '{scheduler_name}' не поддерживается. Не используется.")
 
         if IS_MLFLOW_ACTIVE and mlflow.active_run():
             mlflow.log_param(f"{mode}_scheduler_initialized", type(scheduler).__name__ if scheduler else "None")
