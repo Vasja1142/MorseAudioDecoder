@@ -87,11 +87,11 @@
         ],
         "cnn_kernel_size": [
             [
-                5,
+                3,
                 5
             ],
             [
-                5,
+                3,
                 5
             ]
         ],
@@ -117,12 +117,12 @@
     },
     "training": {
         "apply_audio_augmentation": false,
-        "epochs": 20,
+        "epochs": 12,
         "batch_size": 16,
         "optimizer": "AdamW",
         "learning_rate": 0.0003,
         "weight_decay": 0.0001,
-        "scheduler": "ReduceLROnPlateau",
+        "scheduler": "OneCycleLR",
         "use_amp": true,
         "gradient_accumulation_steps": 2,
         "gradient_clip_val": 1.0,
@@ -131,7 +131,7 @@
     },
     "finetuning": {
         "apply": true,
-        "apply_audio_augmentation": false,
+        "apply_audio_augmentation": true,
         "epochs": 12,
         "batch_size": 16,
         "learning_rate": 0.00025,
@@ -179,7 +179,7 @@
     "execution_info": {
         "python_version": "3.9.21 (main, Dec 11 2024, 16:35:24) [MSC v.1929 64 bit (AMD64)]",
         "torch_version": "2.5.1+cu121",
-        "start_time_utc": "2025-04-23 05:35:39 UTC",
+        "start_time_utc": "2025-04-23 05:43:10 UTC",
         "project_root": "C:\\Users\\vasja\\OneDrive\\Рабочий стол\\MorseAudioDecoder",
         "output_dir_run": "C:\\Users\\vasja\\OneDrive\\Рабочий стол\\MorseAudioDecoder\\outputs\\CRNN_ResNetSE_K3x5-K3x5_Hop96_v10_Base"
     }
