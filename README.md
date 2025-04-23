@@ -62,7 +62,7 @@
 
 | Обучение (Train Loss)                                | Валидация (Validation Loss)                            | Валидация (Levenshtein Distance)                        |
 | :---------------------------------------------------: | :-----------------------------------------------------: | :-----------------------------------------------------: |
-| ![Train Loss]([путь/к/скриншоту/train_loss.png])      | ![Validation Loss]([путь/к/скриншоту/val_loss.png])     | ![Validation Levenshtein]([путь/к/скриншоту/val_lev.png]) |
+| ![Train Loss](docs/images/train_loss.png)     | ![Validation Loss](docs/images/val_loss.png)     | ![Validation Levenshtein](docs/images/val_lev.png) |
 
 *Эти графики помогают оценить стабильность обучения, наличие переобучения и общую производительность модели на разных этапах.*
 
