@@ -1,0 +1,129 @@
+# conf/config.yaml - ОБНОВЛЕНО для централизованного хранилища Optuna
+
+defaults:
+  - base_config # Загружает определения из Python dataclasses
+  - _self_
+  # Отключаем стандартное логирование Hydra
+  - override hydra/hydra_logging: disabled
+  - override hydra/job_logging: disabled
+
+# --- Пути ---
+paths:
+  data_dir: "./"
+  feature_dir: "./morse_npy_features"
+
+# --- Основные Настройки Запуска ---
+enable_hpo: True # Оставляем HPO включенным для примера
+finetune_checkpoint_path: null
+
+# --- Параметры Данных ---
+data_params:
+  metadata_filename: "train.csv"
+  label_column: "message"
+  # feature_input_channels: 18 # Определяется в base_config
+  # feature_seq_len: 4000    # Определяется в base_config
+  train_val_split_ratio: 0.1
+  random_seed: 42
+  blank_char: "<blank>"
+  allowed_chars: " #АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789" # Убедитесь, что символы верны
+  dataset_fraction: 0.20 # Доля данных для использования
+
+# --- Параметры Модели ---
+# model_params будут подбираться HPO или браться из base_config/переопределений
+model_params:
+  block_out_channels: [64, 128] # Пример, может переопределяться HPO
+  # block_kernel_size_0: 5 # Будут подобраны HPO
+  # block_kernel_size_1: 3 # Будут подобраны HPO
+  # block_stride_0: 2      # Будут подобраны HPO
+  # block_stride_1: 2      # Будут подобраны HPO
+  activation_type: 'GELU'
+  process_channels_separately: True
+  # rnn_type: 'GRU'           # Будут подобраны HPO
+  # rnn_hidden_size: 256     # Будут подобраны HPO
+  # rnn_num_layers: 2        # Будут подобраны HPO
+  # rnn_dropout: 0.2         # Будут подобраны HPO
+  # classifier_dropout: 0.2  # Будут подобраны HPO
+  # vocab_size: null         # Заполняется автоматически
+
+# --- Параметры Обучения ---
+train_params:
+  # batch_size: 32              # Будет подобрано HPO
+  num_epochs: 7                 # Количество эпох для HPO trial
+  learning_rate: 1e-4           # Начальный LR (может переопределяться max_lr в OneCycle)
+  # max_lr: 3e-4                # Будет подобрано HPO
+  # optimizer: 'AdamW'          # Будет подобрано HPO
+  scheduler: 'OneCycleLR'       # Тип планировщика
+  scheduler_reduce_factor: 0.1  # Для ReduceLROnPlateau (если используется)
+  scheduler_patience: 5         # Для ReduceLROnPlateau (если используется)
+  # weight_decay: 1e-4          # Будет подобрано HPO
+  use_amp: True                 # Использовать Mixed Precision
+  early_stopping_patience: 10   # Терпение для ранней остановки
+  max_grad_norm: 1.0            # Максимальная норма градиента для клиппинга
+  
+  levenshtein_slope_window: null # Устанавливаем в null, чтобы включить автоматический расчет на основе процента
+  min_epochs_for_slope: null 
+  levenshtein_slope_percentage: 0.4 # 40%
+
+
+# --- Параметры HPO ---
+hpo_params:
+
+  n_trials: 20 # Количество HPO trials для запуска
+  storage_name: "sqlite:///./optuna_databases/all_morse_studies.db" # Центральное хранилище
+  study_name: "morse_optimization_${now:%Y%m%d_%H%M}" # Уникальное имя исследования
+  metric_to_optimize: "val_levenshtein"
+  direction: "minimize"
+
+  # --- Пространство Поиска Гиперпараметров ---
+  param_distributions:
+    # --- Параметры Модели ---
+    model_params.block_kernel_size_0:
+      type: categorical
+      choices: [5, 7, 11]
+    model_params.block_kernel_size_1:
+      type: categorical
+      choices: [5, 7, 11]
+    model_params.block_stride_0:
+      type: categorical
+      choices: [3, 4]
+    model_params.block_stride_1:
+      type: categorical
+      choices: [3, 4]
+    model_params.rnn_type:
+      type: categorical
+      choices: ['GRU', 'LSTM']
+    model_params.rnn_hidden_size:
+      type: categorical
+      choices: [192, 256, 384]
+    model_params.rnn_dropout:
+      type: float
+      low: 0.1
+      high: 0.4
+    model_params.classifier_dropout:
+      type: float
+      low: 0.1
+      high: 0.5
+
+    # --- Параметры Обучения ---
+    train_params.batch_size:
+      type: categorical
+      choices: [8]
+    train_params.max_lr: # Для OneCycleLR
+      type: float
+      low: 3e-4
+      high: 3e-4
+      log: True
+    train_params.optimizer:
+      type: categorical
+      choices: ['AdamW'] # Оставим пока один, можно добавить 'Adam'
+    train_params.weight_decay:
+      type: float
+      low: 1e-5 # Можно расширить диапазон
+      high: 1e-3
+      log: True
+    # Можно добавить подбор learning_rate, если не используется OneCycleLR с max_lr
+    # train_params.learning_rate:
+    #   type: float
+    #   low: 1e-5
+    #   high: 1e-3
+    #   log: True
