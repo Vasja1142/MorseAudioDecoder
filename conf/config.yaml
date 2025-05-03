@@ -1,129 +1,120 @@
-# conf/config.yaml - ОБНОВЛЕНО для централизованного хранилища Optuna
+# conf/config.yaml - ОБНОВЛЕНО (SE, Depthwise, Augmentations)
 
 defaults:
-  - base_config # Загружает определения из Python dataclasses
+  - base_config
   - _self_
-  # Отключаем стандартное логирование Hydra
   - override hydra/hydra_logging: disabled
   - override hydra/job_logging: disabled
 
-# --- Пути ---
 paths:
   data_dir: "./"
-  feature_dir: "./morse_npy_features"
+  feature_dir: "./morse_npy_features_16ch_4bw"
 
-# --- Основные Настройки Запуска ---
-enable_hpo: True # Оставляем HPO включенным для примера
+enable_hpo: True
 finetune_checkpoint_path: null
 
-# --- Параметры Данных ---
 data_params:
   metadata_filename: "train.csv"
   label_column: "message"
-  # feature_input_channels: 18 # Определяется в base_config
-  # feature_seq_len: 4000    # Определяется в base_config
+  feature_input_channels: 16
+  feature_seq_len: 1600
+  num_bandwidth_groups: 4
   train_val_split_ratio: 0.1
   random_seed: 42
   blank_char: "<blank>"
-  allowed_chars: " #АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789" # Убедитесь, что символы верны
-  dataset_fraction: 0.20 # Доля данных для использования
+  allowed_chars: " #АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789"
+  dataset_fraction: 0.25
 
-# --- Параметры Модели ---
-# model_params будут подбираться HPO или браться из base_config/переопределений
 model_params:
-  block_out_channels: [64, 128] # Пример, может переопределяться HPO
-  # block_kernel_size_0: 5 # Будут подобраны HPO
-  # block_kernel_size_1: 3 # Будут подобраны HPO
-  # block_stride_0: 2      # Будут подобраны HPO
-  # block_stride_1: 2      # Будут подобраны HPO
+  block_out_channels: [64, 128]
+  block_kernel_size_0: 5
+  block_stride_0: 2
+  block_kernel_size_1: 3
+  block_stride_1: 2
   activation_type: 'GELU'
-  process_channels_separately: True
-  # rnn_type: 'GRU'           # Будут подобраны HPO
-  # rnn_hidden_size: 256     # Будут подобраны HPO
-  # rnn_num_layers: 2        # Будут подобраны HPO
-  # rnn_dropout: 0.2         # Будут подобраны HPO
-  # classifier_dropout: 0.2  # Будут подобраны HPO
-  # vocab_size: null         # Заполняется автоматически
 
-# --- Параметры Обучения ---
+  # --- Новые параметры модели ---
+  use_se: True                # Использовать SE-блоки?
+  se_reduction_ratio: 4       # Фактор сжатия в SE (если use_se=True)
+  use_depthwise: False        # Использовать Depthwise Separable Conv?
+
+  # --- RNN и Классификатор ---
+  rnn_type: 'GRU'
+  rnn_hidden_size: 256
+  rnn_num_layers: 2
+  rnn_dropout: 0.2
+  classifier_dropout: 0.2
+  # vocab_size: null # Заполняется автоматически
+
 train_params:
-  # batch_size: 32              # Будет подобрано HPO
-  num_epochs: 7                 # Количество эпох для HPO trial
-  learning_rate: 1e-4           # Начальный LR (может переопределяться max_lr в OneCycle)
-  # max_lr: 3e-4                # Будет подобрано HPO
-  # optimizer: 'AdamW'          # Будет подобрано HPO
-  scheduler: 'OneCycleLR'       # Тип планировщика
-  scheduler_reduce_factor: 0.1  # Для ReduceLROnPlateau (если используется)
-  scheduler_patience: 5         # Для ReduceLROnPlateau (если используется)
-  # weight_decay: 1e-4          # Будет подобрано HPO
-  use_amp: True                 # Использовать Mixed Precision
-  early_stopping_patience: 10   # Терпение для ранней остановки
-  max_grad_norm: 1.0            # Максимальная норма градиента для клиппинга
-  
-  levenshtein_slope_window: null # Устанавливаем в null, чтобы включить автоматический расчет на основе процента
-  min_epochs_for_slope: null 
-  levenshtein_slope_percentage: 0.4 # 40%
+  batch_size: 8
+  num_epochs: 8
+  learning_rate: 1e-4
+  max_lr: 3e-4
+  optimizer: 'AdamW'
+  scheduler: 'OneCycleLR'
+  scheduler_reduce_factor: 0.1
+  scheduler_patience: 5
+  weight_decay: 1e-4
+  use_amp: True
+  early_stopping_patience: 10
+  max_grad_norm: 1.0
+  levenshtein_slope_percentage: 0.4
 
+  # --- Новая секция Аугментаций ---
+  augmentations:
+    enable: False               # Включить аугментации?
+    noise_level: 0.01          # Уровень шума (0 = выкл)
+    time_mask_prob: 0.3        # Вероятность маски времени
+    time_mask_max_width: 50    # Макс. ширина маски времени
+    channel_mask_prob: 0.2     # Вероятность маски каналов
+    channel_mask_max_channels: 4 # Макс. кол-во маскируемых каналов
+    gain_prob: 0.1             # Вероятность изменения усиления
+    gain_range: [0.7, 1.3]     # Диапазон усиления
 
-# --- Параметры HPO ---
 hpo_params:
-
-  n_trials: 20 # Количество HPO trials для запуска
-  storage_name: "sqlite:///./optuna_databases/all_morse_studies.db" # Центральное хранилище
-  study_name: "morse_optimization_${now:%Y%m%d_%H%M}" # Уникальное имя исследования
+  n_trials: 60
+  storage_name: "sqlite:///./optuna_databases/all_morse_studies_v2.db" # Новое имя БД
+  study_name: "morse_1d_resnet_full_${now:%Y%m%d_%H%M}"
   metric_to_optimize: "val_levenshtein"
   direction: "minimize"
 
-  # --- Пространство Поиска Гиперпараметров ---
   param_distributions:
-    # --- Параметры Модели ---
-    model_params.block_kernel_size_0:
-      type: categorical
-      choices: [5, 7, 11]
-    model_params.block_kernel_size_1:
-      type: categorical
-      choices: [5, 7, 11]
-    model_params.block_stride_0:
-      type: categorical
-      choices: [3, 4]
-    model_params.block_stride_1:
-      type: categorical
-      choices: [3, 4]
-    model_params.rnn_type:
-      type: categorical
-      choices: ['GRU', 'LSTM']
-    model_params.rnn_hidden_size:
-      type: categorical
-      choices: [192, 256, 384]
-    model_params.rnn_dropout:
-      type: float
-      low: 0.1
-      high: 0.4
-    model_params.classifier_dropout:
-      type: float
-      low: 0.1
-      high: 0.5
 
+    # --- Параметры Модели ---
+    model_params.block_0_channels: { type: "int", low: 64, high: 128, step: 32 }
+    model_params.block_1_channels: { type: "int", low: 128, high: 256, step: 64 }
+
+    # ДОБАВИЛИ: Другие параметры модели для настройки
+    model_params.block_kernel_size_0: { type: "categorical", choices: [5, 7, 11] }
+    model_params.block_kernel_size_1: { type: "categorical", choices: [5, 7, 11] }
+    model_params.block_stride_0: { type: "categorical", choices: [2, 4] }
+    model_params.block_stride_1: { type: "categorical", choices: [2] } # Убедитесь, что общее сжатие разумно
+    model_params.use_se: { type: "categorical", choices: [True, False] }
+    model_params.se_reduction_ratio: { type: "int", low: 4, high: 16, step: 4 } # Актуально, если use_se=True
+    model_params.use_depthwise: { type: "categorical", choices: [True, False] }
+
+    # --- Параметры Модели (RNN) ---
+    model_params.rnn_type: { type: "categorical", choices: ['GRU', 'LSTM'] }
+    model_params.rnn_hidden_size: { type: "int", low: 256, high: 512, step: 128 }
+    model_params.rnn_num_layers: { type: "int", low: 3, high: 4 }
+    model_params.rnn_dropout: { type: "float", low: 0.0, high: 0.5 }
+
+    # --- Параметры Модели (Классификатор) ---
+    model_params.classifier_dropout: { type: "float", low: 0.0, high: 0.5 }
     # --- Параметры Обучения ---
-    train_params.batch_size:
-      type: categorical
-      choices: [8]
-    train_params.max_lr: # Для OneCycleLR
-      type: float
-      low: 3e-4
-      high: 3e-4
-      log: True
-    train_params.optimizer:
-      type: categorical
-      choices: ['AdamW'] # Оставим пока один, можно добавить 'Adam'
-    train_params.weight_decay:
-      type: float
-      low: 1e-5 # Можно расширить диапазон
-      high: 1e-3
-      log: True
-    # Можно добавить подбор learning_rate, если не используется OneCycleLR с max_lr
-    # train_params.learning_rate:
-    #   type: float
-    #   low: 1e-5
-    #   high: 1e-3
-    #   log: True
+    train_params.batch_size: {type: categorical, choices: [8]} # Оставим 8 пока
+    train_params.max_lr: {type: float, low: 3e-4, high: 3e-4, log: True}
+    # train_params.optimizer: {type: categorical, choices: ['AdamW']} # Оставим AdamW
+    train_params.weight_decay: {type: float, low: 1e-6, high: 1e-3, log: True}
+
+    # --- Параметры Аугментаций (Пример) ---
+    # Можно подбирать enable, но лучше включать/выключать всю секцию
+    train_params.augmentations.enable: {type: categorical, choices: [False]}
+    train_params.augmentations.noise_level: {type: float, low: 0.0, high: 0.05}
+    train_params.augmentations.time_mask_prob: {type: float, low: 0.0, high: 0.5}
+    train_params.augmentations.time_mask_max_width: {type: int, low: 20, high: 80}
+    train_params.augmentations.channel_mask_prob: {type: float, low: 0.0, high: 0.3}
+    train_params.augmentations.channel_mask_max_channels: {type: int, low: 1, high: 6}
+    # train_params.augmentations.gain_prob: {type: float, low: 0.0, high: 0.3}
+    # gain_range подбирать сложнее, оставим фиксированным
